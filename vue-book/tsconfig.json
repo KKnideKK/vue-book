@@ -1,0 +1,19 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    }
+    
+  ],
+  "compilerOptions": {
+    "baseUrl": "./", // 需要设置 baseUrl
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+
+}

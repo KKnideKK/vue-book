@@ -28,6 +28,10 @@ const routes = [
   {
     path: '/admin_data',
     component: () => import('./assets/admin_data.vue')// 加载图书管理组件
+  },
+  {
+    path: '/book_data',
+    component: () => import('./assets/book_data.vue')// 加载图书详情
   }
 ]
 

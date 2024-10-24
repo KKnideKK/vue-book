@@ -1,21 +1,19 @@
 <template>
     <div class="login-container">  
-      <h2>管理员注册</h2>  
+      <h2>用户登录</h2>  
       <form @submit.prevent="login">  
         <div>  
-          <label for="username">账号:</label>  
-          <input type="text" id="username" v-model="username" required>  
+          <label for="phone_number">账号:</label>  
+          <input type="text" id="phone_number" v-model="phone_number" required>  
         </div>  
         <div>  
           <label for="password">密码:</label>  
           <input type="password" id="password" v-model="password" required>  
         </div>  
-        <div>  
-          <label for="password">内部指令:</label>  
-          <input type="password" id="password" v-model="password" required>  
-        </div>  
         <button type="submit">登录</button>  
-        <router-link to="/Admin" class="getadmin-link">返回登录页面</router-link>
+        <router-link to="/Admin" class="home-link">管理员</router-link>
+        <router-link to="/get_user" class="home-link">注册</router-link>
+        <router-link to="/get_itid" class="home-link">验证码登录</router-link>
       </form>  
     </div>
 </template>
@@ -25,15 +23,14 @@ import axios from 'axios';
 export default {  
   data() {  
     return {  
-      username: '',  
+      phone_number: '',  
       password: ''  
     };  
   },  
   methods: {
     login() {  
-      // 这里可以添加登录逻辑，比如发送请求到后端验证  
-      axios.post('http://localhost:5000/login', { // 替换为你的后端API地址
-        username: this.username,
+      axios.post('http://localhost:5000/userv', { // 替换为你的后端API地址
+        phone_number: this.phone_number,
         password: this.password
       }, {
         headers: {
@@ -42,13 +39,16 @@ export default {
       }
     )
       .then(response => {
-        // 假设返回的数据中包含一个success字段表示登录是否成功
         if (response.data.success) {
-          alert('登录成功');
-          // 假设验证成功，你可以使用Vue Router进行页面跳转  
-          this.$router.push('/Book');  
-        } else {
-            alert('登录失败');
+          alert(response.data.message);
+          this.$router.push({ 
+              path: '/Book', 
+            query: { phone_number: this.phone_number }  // 传递账号信息
+             } ); //验证成功跳转页面
+
+        } 
+        else {
+            alert(response.data.message);
         }
       })
       .catch(error => {
@@ -104,7 +104,7 @@ export default {
   background-color: #45a049;  
 }  
 
-.getadmin-link {
+.home-link {
   display: inline-block;
   margin-top: 10px;
   margin-right: 10px;
@@ -116,7 +116,7 @@ export default {
   transition: background-color 0.3s; /* 添加过渡效果 */
 }
 
-.getadmin-link:hover {
+.home-link:hover {
   background-color: #a6f606; /* 悬停时变深的粉色 */
 }
 </style>

@@ -22,6 +22,7 @@
           <div class="add-book">
             <h2>图书添加</h2>
             <form @submit.prevent="addBook">
+
                 <label for="id">ID:</label>
                 <input type="text" id="id" name="id" v-model="newBook.id" required>
                 <label for="title">书名:</label>
@@ -30,8 +31,18 @@
                 <input type="text" id="author" name="author" v-model="newBook.author" required>
                 <label for="category">分类:</label>
                 <input type="text" id="category" name="category" v-model="newBook.category" required>
+                <label for="location">存放位置：</label>
+                <input type="text" id="location" name="location" v-model="newBook.location" required>
                 <label for="description">简介:</label>
                 <textarea id="description" name="description" v-model="newBook.description" required></textarea>
+                <label for="image">封面图片:</label>
+                        <input type="file" id="image" @change="onImageChange" accept="image/*">
+
+                        <!-- 显示选择的图片 -->
+                        <div v-if="imagePreview">
+                            <h3>预览图片:</h3>
+                            <img :src="imagePreview" alt="书籍封面" style="width: 15%; height: auto;">
+                        </div>
                 <button type="submit">添加</button>
             </form>
           </div>
@@ -68,16 +79,32 @@ export default {
                 title: '',
                 author: '',
                 category: '',
-                description: ''
-            }
+                description: '',
+                location: '',
+                imageUrl: ''
+            },
+            imagePreview: null,
+            imageFile: null // 存储图片文件
         };
     },
     methods: {
+
+        onImageChange(event) {
+            this.imageFile= event.target.files[0]; // 获取选择的文件
+    if (this.imageFile) {
+        const reader = new FileReader(); // 创建 FileReader 实例
+        reader.onload = (e) => {
+            this.imagePreview = e.target.result; // 将读取到的结果赋值给 imagePreview
+        };
+        reader.readAsDataURL(this.imageFile); // 读取文件
+    }
+    },
+
         fetchBooks() {
             let url = `http://localhost:5000/api/book/book_id?searchText=${this.searchText}`;
             axios.get(url)
             .then(response => {
-                this.books = [response.data]; // 假设返回的书籍数据是单个对象
+                this.books = [response.data]; 
             })
             .catch(error => {
                 console.error('获取书籍信息失败:', error);
@@ -85,21 +112,42 @@ export default {
         },
         addBook() {
             let url = 'http://localhost:5000/api/newbook';
-            axios.post(url, this.newBook)
-            .then(response => {
-                console.log('书籍添加成功:', response.data);
-                // 重置表单数据
-                this.newBook = {
-                    id: '',
-                    title: '',
-                    author: '',
-                    category: '',
-                    description: ''
-                };
-            })
-            .catch(error => {
-                console.error('添加书籍失败:', error);
-            });
+    const formData = new FormData(); // 创建 FormData 实例
+
+    // 将书籍信息添加到 FormData
+    formData.append('id', this.newBook.id);
+    formData.append('title', this.newBook.title);
+    formData.append('author', this.newBook.author);
+    formData.append('category', this.newBook.category);
+    formData.append('location', this.newBook.location);
+    formData.append('description', this.newBook.description);
+    
+    if (this.imageFile) {
+        formData.append('image', this.imageFile);
+    }
+
+    axios.post(url, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data' 
+        }
+    })
+    .then(response => {
+        console.log('书籍添加成功:', response.data);
+        // 重置表单数据
+        this.newBook = {
+            id: '',
+            title: '',
+            author: '',
+            category: '',
+            description: '',
+            location: '',
+        };
+        this.imageFile = null; // 重置图片文件
+        this.imagePreview = null; // 重置预览
+    })
+    .catch(error => {
+        console.error('添加书籍失败:', error);
+    });
         },
         deleteBook(books) {
             if (confirm('您确定要删除这本书吗？')) {
@@ -126,7 +174,7 @@ export default {
             axios.get(url)
             .then(response => {
                 this.userdata="";
-                this.users = response.data; // 假设返回的用户数据是数组
+                this.users = response.data; 
             })
             .catch(error => {
                 console.error('获取用户信息失败:', error);
